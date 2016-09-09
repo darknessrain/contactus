@@ -1,5 +1,6 @@
 //多語系動態網頁介面配搭CSS切換程式碼
 //Coding by Jerry Shih @ Quanta Computer Inc. - 2016/07/05 ver 0.9 LT
+// updated @ 2016/09/09 ver.0.9.9
 //使用時必須在HTML HEAD標籤掛入本 J_S_Multi_language_v*.*.js檔案
 //主要功能1 : Multi-lang Title 根據 on_click 事件切換網頁標題
 //主要功能2 : 賦予Body 語系標籤，例如 TW,ENG,JP。以便讓不同的CSS樣式來切換背景圖片、甚至文字
@@ -7,20 +8,28 @@
 //主要功能4 : 使用DOM方法，依照語系更改文件內的文字
 
 // 其他功能a (HTML) : 自動偵測瀏覽器語言，更改語言預設值。
+// 手動修改語系後，將存入一個判斷的Cookie
+// 再入時自動判斷語系Cookie與手動修改Cookie是否存在並自動調整。
+
 
 
 
 
 //=====程式開始======
-
-
-
-
-
-
 function chg_lang(lang_index){
 
+        forceChangeLangSetCookie();
+        auto_chg_lang(lang_index);
+}
 
+
+
+// 切換語系
+function auto_chg_lang(lang_index){
+
+      //寫入Cookie
+      setCookie('lang_code',lang_index,'365');
+      var xck= getCookie('lang_code');
 			//更改標題文字
       changeWebTitle(lang_index);
 
@@ -49,6 +58,18 @@ function chg_lang(lang_index){
 
 
 		}
+
+
+
+
+
+  // 設定cookie 並將 forceChangeLang_index 值填上1,cookie一小時後失效
+function   forceChangeLangSetCookie(){
+          //寫入Cookie
+          setCookie('forceChangeLang_index',1,'0.1');
+          var xcka= getCookie('forceChangeLang_index');
+
+}
 
 //主要功能1 : Multi-lang Title 根據 on_click 事件切換網頁標題
 function changeWebTitle(lang_index){
@@ -125,28 +146,68 @@ function changeAllNavBarUIWording(arr,lang_index){
 
 function detectUserLang(){
 
+    var IsforceChangeLang_index= getCookie('forceChangeLang_index');
     var tempLang = window.navigator.userLanguage || window.navigator.language ;
     var currentBrowserLang = tempLang.toLowerCase();
-    console.log(currentBrowserLang);
 
+  if (IsforceChangeLang_index!=1){
     switch (currentBrowserLang) {
       case "zh-tw":
-            chg_lang(0);
+            auto_chg_lang(0);
+            autolang_index=0;
         break;
       case "zh-cn":
-            chg_lang(0);
+            auto_chg_lang(0);
+            autolang_index=0;
         break;
       case "zh-hk":
-            chg_lang(0);
+            auto_chg_lang(0);
+            autolang_index=0;
         break;
       case "ja":
-            chg_lang(2);
+            auto_chg_lang(1);
+            autolang_index=1;
         break;
 
       default:
-            chg_lang(1);
+            auto_chg_lang(1);
+            autolang_index=1;
         break;
     }
+
+    setCookie('lang_code',autolang_index,'365');
+
+  } else {
+    var Previous_Lang_index= getCookie('lang_code');
+    auto_chg_lang(Previous_Lang_index);
+  }
+}
+
+
+//設定cookie的function
+function setCookie(cookieName, cookieValue, exdays) {
+  if (document.cookie.indexOf(cookieName) >= 0) {
+    var expD = new Date();
+    expD.setTime(expD.getTime() + (-1*24*60*60*1000));
+    var uexpires = "expires="+expD.toUTCString();
+    document.cookie = cookieName + "=" + cookieValue + "; " + uexpires+"; "+ 'path=/';
+  }
+  var d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  var expires = "expires="+d.toUTCString();
+  document.cookie = cookieName + "=" + cookieValue + "; " + expires+"; "+ 'path=/';
+}
+
+// 讀取cookie
+function getCookie(cookieName) {
+  var name = cookieName + "=";
+  var ca = document.cookie.split(';');
+  for(var i=0; i<ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0)==' ') c = c.substring(1);
+      if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+  }
+  return "";
 }
 
 
